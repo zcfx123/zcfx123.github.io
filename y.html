@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zc应用商店</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7b2cbf;
+            --secondary: #9d4edd;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #e0aaff;
+            --text: #f8f9fa;
+            --text-secondary: #adb5bd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background-color: var(--darker);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 1rem;
+            font-size: 2.8rem;
+        }
+        
+        .search-bar {
+            display: flex;
+            width: 350px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(123, 44, 191, 0.5);
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+        }
+        
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .search-bar button {
+            padding: 0 1.5rem;
+            background: transparent;
+            color: var(--text);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-bar button:hover {
+            color: var(--light);
+        }
+        
+        .search-bar button i {
+            font-size: 1.2rem;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .app-card {
+            background: rgba(30, 30, 30, 0.7);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(123, 44, 191, 0.4);
+            border-color: var(--primary);
+        }
+        
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .app-image {
+            height: 160px;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(50, 50, 50, 0.6));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: var(--light);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 0%,
+                transparent 50%,
+                rgba(157, 78, 221, 0.1) 50%,
+                rgba(123, 44, 191, 0.3) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(30deg) translate(-30%, -30%); }
+            100% { transform: rotate(30deg) translate(30%, 30%); }
+        }
+        
+        .app-info {
+            padding: 1.5rem;
+        }
+        
+        .app-name {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .app-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .app-source {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(123, 44, 191, 0.2);
+            color: var(--light);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .app-btn {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .app-btn:hover {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            box-shadow: 0 5px 15px rgba(123, 44, 191, 0.4);
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            text-align: center;
+            color: #ff6b6b;
+            padding: 2rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .error h2 {
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .error button {
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .error button:hover {
+            background: var(--secondary);
+        }
+        
+        .disclaimer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .disclaimer h3 {
+            color: var(--light);
+            margin-bottom: 0.8rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .logo {
+                margin-bottom: 1.5rem;
+                font-size: 2rem;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i>🛸</i> zc软件库
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="搜索应用...">
+                <button><i>🔍</i></button>
+            </div>
+        </header>
+        
+        <main>
+            <div id="app-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                <h3>免责声明</h3>
+                <p>本站中除有“zc”的所有资源均来自网络收集整理，仅供学习交流使用。请勿用于商业用途，请在下载后24小时内删除。所有资源版权归原作者所有，本站不承担任何技术及版权问题。使用本站资源即表示您同意以上声明。</p>
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#7b2cbf"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 2,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#7b2cbf",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 1,
+                        "direction": "none",
+                        "random": true,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": true,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+            
+            const appContainer = document.getElementById('app-container');
+            
+            fetch('http://zcfx.vvvv.ee/data.txt?t=' + new Date().getTime())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    const apps = parseData(data);
+                    renderApps(apps);
+                })
+                .catch(error => {
+                    console.error('获取数据失败:', error);
+                    appContainer.innerHTML = `
+                        <div class="error">
+                            <h2>加载应用失败</h2>
+                            <p>${error.message}</p>
+                            <button onclick="window.location.reload()">重试</button>
+                        </div>
+                    `;
+                });
+            
+            const searchInput = document.querySelector('.search-bar input');
+            const searchButton = document.querySelector('.search-bar button');
+            
+            searchButton.addEventListener('click', filterApps);
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    filterApps();
+                }
+            });
+            
+            let allApps = [];
+            
+            function parseData(data) {
+                const lines = data.split('\n').filter(line => line.trim() !== '');
+                const apps = [];
+                
+                for (let i = 0; i < lines.length; i += 3) {
+                    if (i + 2 >= lines.length) break;
+                    
+                    const name = lines[i].trim();
+                    let url = lines[i + 1].trim();
+                    const pwd = lines[i + 2].trim();
+                    
+                    if (url && pwd) {
+                        url = `https://lz.qaiu.top/parser?url=${encodeURIComponent(url)}&pwd=${encodeURIComponent(pwd)}`;
+                    }
+                    
+                    let source = '未知';
+                    
+                    if (url.includes('lanzouw.com') || url.includes('lanzou.com')) {
+                        source = '蓝奏云';
+                    } else if (url.includes('feijipan.com')) {
+                        source = '小飞机网盘';
+                    } else if (url.includes('aliyundrive.com')) {
+                        source = '阿里云盘';
+                    }
+                    
+                    apps.push({
+                        name,
+                        url,
+                        source,
+                        pwd
+                    });
+                }
+                
+                allApps = apps.sort((a, b) => {
+                    const aHasZC = a.name.toLowerCase().includes('zc');
+                    const bHasZC = b.name.toLowerCase().includes('zc');
+                    
+                    if (aHasZC && !bHasZC) return -1;
+                    if (!aHasZC && bHasZC) return 1;
+                    return 0;
+                });
+                
+                return allApps;
+            }
+            
+            function renderApps(apps) {
+                if (apps.length === 0) {
+                    appContainer.innerHTML = '<div class="error">没有找到应用</div>';
+                    return;
+                }
+                
+                let html = '<div class="app-grid">';
+                
+                apps.forEach(app => {
+                    const firstChar = app.name.charAt(0).toUpperCase();
+                    const color = getRandomGradient();
+                    const passwordText = app.pwd === '无' || app.pwd === '' ? '无密码' : `密码: ${app.pwd}`;
+                    
+                    html += `
+                        <div class="app-card">
+                            <div class="app-image" style="background: ${color}">
+                                ${firstChar}
+                            </div>
+                            <div class="app-info">
+                                <h3 class="app-name">${app.name}</h3>
+                                <div class="app-meta">
+                                    <span>${passwordText}</span>
+                                    <span class="app-source">${app.source}</span>
+                                </div>
+                                <a href="${app.url}" target="_blank" class="app-btn">获取下载</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                appContainer.innerHTML = html;
+            }
+            
+            function filterApps() {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                if (searchTerm === '') {
+                    renderApps(allApps);
+                    return;
+                }
+                
+                const filteredApps = allApps.filter(app => 
+                    app.name.toLowerCase().includes(searchTerm) || 
+                    app.source.toLowerCase().includes(searchTerm) ||
+                    (app.pwd && app.pwd.toLowerCase().includes(searchTerm))
+                );
+                
+                renderApps(filteredApps);
+            }
+            
+            function getRandomGradient() {
+                const gradients = [
+                    'linear-gradient(135deg, #7b2cbf, #9d4edd)',
+                    'linear-gradient(135deg, #3a0ca3, #4361ee)',
+                    'linear-gradient(135deg, #7209b7, #f72585)',
+                    'linear-gradient(135deg, #480ca8, #4cc9f0)',
+                    'linear-gradient(135deg, #560bad, #b5179e)',
+                    'linear-gradient(135deg, #3f37c9, #4895ef)',
+                    'linear-gradient(135deg, #4361ee, #3a0ca3)'
+                ];
+                
+                return gradients[Math.floor(Math.random() * gradients.length)];
+            }
+        });
+    </script>
+</body>
+  </html>
