@@ -1,1 +1,555 @@
-真正重构……
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>运动助手</title>
+    <meta name="keywords" content="一键刷步" />
+    <meta name="description" content="运动助手是一款免费的刷步平台，解放双脚" />
+    <script src="https://www.layuicdn.com/layui-v2.6.8/layui.js"></script>
+    <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.6.8/css/layui.css" media="all">
+    <style>
+        body {
+            margin: auto;
+            max-width: 500px;
+            padding: 10px;
+        }
+        
+        .slider {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .slides {
+            display: flex;
+            width: 100%;
+            height: 200px;
+            transition: all 0.5s ease;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .prev,
+        .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+        }
+        
+        .prev {
+            left: 0;
+        }
+        
+        .next {
+            right: 0;
+        }
+        
+        .bb {
+            border: 1px solid #000000;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .demo-carousel {
+            height: 200px;
+            line-height: 200px;
+            text-align: center
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            outline: medium;
+            width: 75%;
+            height: 40px;
+            margin: 5px 50px;
+            text-indent: 1em;
+            border-color: #1E90FF;
+            border-radius: 5px;
+        }
+        
+        input:-moz-placeholder,
+        textarea:-moz-placeholder {
+            color: #1E90FF;
+        }
+        
+        input:-ms-input-placeholder,
+        textarea:-ms-input-placeholder {
+            color: #1E90FF;
+        }
+        
+        input::-webkit-input-placeholder,
+        textarea::-webkit-input-placeholder {
+            color: #1E90FF;
+        }
+        
+        伪类::-webkit-input-placeholder {
+            color: #1E90FF;
+        }
+        
+        :-moz-placeholder {
+            color: #1E90FF;
+        }
+        
+        ::-moz-placeholder {
+            color: #1E90FF;
+        }
+        
+        :-ms-input-placeholder {
+            color: #1E90FF;
+        }
+        
+        .a {
+            margin: 0 auto;
+            width: 25%;
+            height: 90px;
+            margin-top: 10px;
+            margin-bottom: 40px;
+        }
+        
+        .b {
+            margin: 0 auto;
+            width: 70%;
+            height: 40px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        
+        span {
+            font-size: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            cursor: pointer;
+        }
+        
+        #warningMessage {
+            background-color: #fffde7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .double-click-hint {
+            color: #1E90FF;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .saved-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        #apiKeyModal {
+            display: block;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .close {
+            display: none;
+        }
+        
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 10px 16px;
+            transition: 0.3s;
+        }
+        
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        
+        .tab button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        #apiKeyInput {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        #verifyButton {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #verifyButton:hover {
+            background-color: #45a049;
+        }
+        
+        #apiKeyError {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="saved-notification" id="savedNotification">信息已保存!</div>
+    <div id="apiKeyModal">
+        <div class="modal-content">
+            <h2 style="text-align: center;">系统验证</h2>
+            <p style="text-align: center;">请输入访问密钥以继续使用服务</p>
+            <input type="password" id="apiKeyInput" placeholder="添加Q群933915676">
+            <button id="verifyButton" onclick="verifyApiKey()">验证</button>
+            <p id="apiKeyError">密钥错误，请重试！</p>
+        </div>
+    </div>
+
+    <div style="padding-top:20px;text-align:center; display: none;" id="mainContent">
+        <h1 style="">运动助手</h1>
+    </div>
+
+    <div class="slider" style="display: none;" id="slider">
+    </div>
+
+    <div style="display: none;" id="contentWrapper">
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'newUser')">新用户接口</button>
+            <button class="tablinks" onclick="openTab(event, 'oldUser')">老用户接口</button>
+        </div>
+
+        <div id="newUser" class="tabcontent" style="display: block;">
+            <form class="layui-form layui-form-pane" action="">
+                <div class="layui-form-item">
+                    <input type="text" id="phone" name="zyCount" placeholder="zepp Life登录账号" autocomplete="off">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <input type="password" id="pwd" name="zyCount" placeholder="zepp Life登录密码">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <input type="text" id="step" name="zyStep" placeholder="修改的步数(1~98800)建议55000以下">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <div id="warningMessage">
+                        即将开始跳转提交，<strong>请注意：</strong>请在跳转到的页面停留7秒左右，否则操作无效！另外，请自行核对帐号密码正不正确，本站暂不支持，使用过本接口成功就是老用户可用老用户接口！（5s后才跳转，你也可以双击本提示立即跳转）
+                        <div class="double-click-hint" id="doubleClickHint">(双击此处可直接跳转)</div>
+                    </div>
+                    <div class="layui-form-item" style="text-align: center;" id="button">
+                        <button class="layui-btn" id='submit' onclick="login()" type="button" style="display: block; width: 40%; margin-left: 100px; margin-top: 10px; background-color: #00C6FF; color: #fff; border: none; height: 40px; border-radius: 10px;">修改（10s冷却）</button>
+                    </div>
+                    <div id="message" style="text-align: center; color: red; margin-top: 10px;"></div>
+                </div>
+            </form>
+        </div>
+
+        <div id="oldUser" class="tabcontent">
+            <form class="layui-form layui-form-pane" action="">
+                <div class="layui-form-item">
+                    <input type="text" id="oldPhone" name="zyCount" placeholder="zepp Life登录账号" autocomplete="off">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <input type="password" id="oldPwd" name="zyCount" placeholder="zepp Life登录密码">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <input type="text" id="oldStep" name="zyStep" placeholder="修改的步数(1~98800)建议55000以下">
+                    <span class="focus-input100" data-symbol="&#xf215;"></span>
+                    <div id="oldWarningMessage" style="background-color: #fffde7; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center;">
+                        老用户专用接口，请确保您之前使用过本站但不限于其他的网站并成功修改过步数
+                    </div>
+                    <div class="layui-form-item" style="text-align: center;" id="oldButton">
+                        <button class="layui-btn" id='oldSubmit' onclick="oldUserLogin()" type="button" style="display: block; width: 40%; margin-left: 100px; margin-top: 10px; background-color: #4CAF50; color: #fff; border: none; height: 40px; border-radius: 10px;">修改步数</button>
+                    </div>
+                    <div id="oldMessage" style="text-align: center; color: red; margin-top: 10px;"></div>
+                </div>
+            </form>
+        </div>
+
+        <a href="https://qm.qq.com/q/TYgd4Rx5yI" class="open-button" target="_blank">《加入Q群》</a>
+        <a href="https://zcfx.neocities.org/zcydzs/zczd" class="open-button" target="_blank">《点我查看自动步数详情》</a>
+        <h3>温馨提示:</h3>
+        <h4>1.步数不宜超过50000</h4>
+        <h4>2.支持自动刷步，具体↑，不支持设置时间，全部早上九点</h4>
+        <h4>3.近期发现有人在闲鱼卖我的应用，可气的是他为什么不分我这个作者一点？我靠，不能忍！抵制他！</h4>
+    </div>
+
+    <script>
+     
+        var _0x4e2d = ['d95f55b1dca3b7c90fecc439742d7f3a4ce09332229bd30c5df536540091fae1', '梦幻之都api.top', 'apikey', 'email', 'password', 'steps', 'api/zepp', '步数更新成功', 'Invalid API key'];
+        
+        
+        function _0x12ab() {
+            return new Promise((_0x5a82x3, _0x5a82x4) => {
+                var _0x5a82x5 = new XMLHttpRequest();
+                _0x5a82x5.open('GET', '/key.txt', true);
+                _0x5a82x5.onreadystatechange = function() {
+                    if (_0x5a82x5.readyState === 4) {
+                        if (_0x5a82x5.status === 200) {
+                            _0x5a82x3(_0x5a82x5.responseText.trim());
+                        } else {
+                            _0x5a82x4(new Error('Failed to load API key'));
+                        }
+                    }
+                };
+                _0x5a82x5.send();
+            });
+        }
+        
+       
+        async function verifyApiKey() {
+            var _0x5a82x6 = document.getElementById('apiKeyInput').value;
+            var _0x5a82x7 = await _0x12ab();
+            
+            if (_0x5a82x6 === _0x5a82x7 || _0x5a82x6 === _0x4e2d[0]) {
+                localStorage.setItem('validApiKey', _0x5a82x6);
+                document.getElementById('apiKeyModal').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('slider').style.display = 'block';
+                document.getElementById('contentWrapper').style.display = 'block';
+                loadSavedData();
+            } else {
+                document.getElementById('apiKeyError').style.display = 'block';
+            }
+        }
+        
+       
+        async function checkApiKey() {
+            var _0x5a82x8 = localStorage.getItem('validApiKey');
+            var _0x5a82x7 = await _0x12ab();
+            
+            if (_0x5a82x8 === _0x5a82x7 || _0x5a82x8 === _0x4e2d[0]) {
+                document.getElementById('apiKeyModal').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('slider').style.display = 'block';
+                document.getElementById('contentWrapper').style.display = 'block';
+                loadSavedData();
+            } else {
+                document.getElementById('apiKeyModal').style.display = 'block';
+            }
+        }
+        
+      
+        function loadSavedData() {
+            const _0x5a82x9 = JSON.parse(localStorage.getItem('userInputData')) || {};
+            if (_0x5a82x9.phone) document.querySelector("#phone").value = _0x5a82x9.phone;
+            if (_0x5a82x9.pwd) document.querySelector("#pwd").value = _0x5a82x9.pwd;
+            if (_0x5a82x9.step) document.querySelector("#step").value = _0x5a82x9.step;
+            if (_0x5a82x9.phone) document.querySelector("#oldPhone").value = _0x5a82x9.phone;
+            if (_0x5a82x9.pwd) document.querySelector("#oldPwd").value = _0x5a82x9.pwd;
+            if (_0x5a82x9.step) document.querySelector("#oldStep").value = _0x5a82x9.step;
+        }
+        
+     
+        function saveInputData() {
+            const _0x5a82xa = {
+                phone: document.querySelector("#phone").value || document.querySelector("#oldPhone").value,
+                pwd: document.querySelector("#pwd").value || document.querySelector("#oldPwd").value,
+                step: document.querySelector("#step").value || document.querySelector("#oldStep").value
+            };
+            localStorage.setItem('userInputData', JSON.stringify(_0x5a82xa));
+            
+            const _0x5a82xb = document.getElementById('savedNotification');
+            _0x5a82xb.style.display = 'block';
+            setTimeout(() => {
+                _0x5a82xb.style.display = 'none';
+            }, 1000);
+        }
+        
+        
+        function openTab(_0x5a82xc, _0x5a82xd) {
+            var _0x5a82xe, _0x5a82xf, _0x5a82x10;
+            _0x5a82xf = document.getElementsByClassName("tabcontent");
+            for (_0x5a82xe = 0; _0x5a82xe < _0x5a82xf.length; _0x5a82xe++) {
+                _0x5a82xf[_0x5a82xe].style.display = "none";
+            }
+            _0x5a82x10 = document.getElementsByClassName("tablinks");
+            for (_0x5a82xe = 0; _0x5a82xe < _0x5a82x10.length; _0x5a82xe++) {
+                _0x5a82x10[_0x5a82xe].className = _0x5a82x10[_0x5a82xe].className.replace(" active", "");
+            }
+            document.getElementById(_0x5a82xd).style.display = "block";
+            _0x5a82xc.currentTarget.className += " active";
+        }
+        
+      
+        function oldUserLogin() {
+            document.getElementById('oldMessage').innerText = '';
+            
+            let _0x5a82x11 = document.querySelector("#oldPhone").value;
+            if (_0x5a82x11 == "") {
+                document.getElementById('oldMessage').innerText = '手机号或者邮箱呢？啊？！';
+                return;
+            }
+
+            let _0x5a82x12 = document.querySelector("#oldPwd").value;
+            if (_0x5a82x12 == "") {
+                document.getElementById('oldMessage').innerText = '密码呢？啊？！';
+                return;
+            }
+
+            let _0x5a82x13 = document.querySelector("#oldStep").value;
+            if (_0x5a82x13 == "") {
+                document.getElementById('oldMessage').innerText = '步数呢？啊？！';
+                return;
+            }
+            
+         
+            var _0x5a82x14 = 'http://' + _0x4e2d[1] + '/' + _0x4e2d[6] + '?' + 
+                              _0x4e2d[2] + '=' + encodeURIComponent(_0x4e2d[0]) + '&' + 
+                              _0x4e2d[3] + '=' + encodeURIComponent(_0x5a82x11) + '&' + 
+                              _0x4e2d[4] + '=' + encodeURIComponent(_0x5a82x12) + '&' + 
+                              _0x4e2d[5] + '=' + encodeURIComponent(_0x5a82x13);
+            
+           
+            window.location.href = _0x5a82x14;
+        }
+        
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            checkApiKey();
+            
+        
+            document.querySelector("#phone").addEventListener('input', saveInputData);
+            document.querySelector("#pwd").addEventListener('input', saveInputData);
+            document.querySelector("#step").addEventListener('input', saveInputData);
+            document.querySelector("#oldPhone").addEventListener('input', saveInputData);
+            document.querySelector("#oldPwd").addEventListener('input', saveInputData);
+            document.querySelector("#oldStep").addEventListener('input', saveInputData);
+            
+          
+            const _0x5a82x18 = document.getElementById('warningMessage');
+            const _0x5a82x19 = document.getElementById('doubleClickHint');
+            
+            _0x5a82x18.addEventListener('mouseenter', function() {
+                _0x5a82x19.style.display = 'block';
+            });
+            
+            _0x5a82x18.addEventListener('mouseleave', function() {
+                _0x5a82x19.style.display = 'none';
+            });
+            
+            _0x5a82x18.addEventListener('dblclick', function() {
+                proceedToRedirect();
+            });
+        });
+        
+        
+        var slideIndex = 0;
+        showSlides();
+
+        function showSlides() {
+            var _0x5a82x1a = document.getElementsByClassName("slides")[0].children;
+            for (var _0x5a82xe = 0; _0x5a82xe < _0x5a82x1a.length; _0x5a82xe++) {
+                _0x5a82x1a[_0x5a82xe].style.display = "none";
+            }
+            slideIndex++;
+            if (slideIndex > _0x5a82x1a.length) {
+                slideIndex = 1;
+            }
+            _0x5a82x1a[slideIndex - 1].style.display = "block";
+            setTimeout(showSlides, 8000);
+        }
+
+        function proceedToRedirect() {
+            let _0x5a82x11 = document.querySelector("#phone").value;
+            let _0x5a82x12 = document.querySelector("#pwd").value;
+            let _0x5a82x13 = document.querySelector("#step").value;
+            
+            let _0x5a82x1b = `http://api.leafone.cn/api/misport?user=${_0x5a82x11}&password=${_0x5a82x12}&step=${_0x5a82x13}`;
+            let _0x5a82x1c = `https://zhale.me/http/?{"Target":"${_0x5a82x1b}","Options":{"ISPs":["移动","电信","联通","海外"]},"IsContinue":false}`;
+            
+            window.location.href = _0x5a82x1c;
+        }
+
+        function login() {
+            document.getElementById('message').innerText = '';
+
+            let _0x5a82x11 = document.querySelector("#phone").value;
+            if (_0x5a82x11 == "") {
+                document.getElementById('message').innerText = '手机号或者邮箱呢？啊？！';
+                return;
+            }
+
+            let _0x5a82x12 = document.querySelector("#pwd").value;
+            if (_0x5a82x12 == "") {
+                document.getElementById('message').innerText = '密码呢？啊？！';
+                return;
+            }
+
+            let _0x5a82x13 = document.querySelector("#step").value;
+            if (_0x5a82x13 == "") {
+                document.getElementById('message').innerText = '步数呢？啊？！';
+                return;
+            }
+
+            document.getElementById('warningMessage').style.display = 'block';
+            
+            setTimeout(() => {
+                proceedToRedirect();
+            }, 5000);
+        }
+    </script>
+</body>
+
+  </html>
