@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>zc运动助手 - 永久免费的刷步神器</title>
+    <meta name="keywords" content="一键刷步,微信运动修改,zepp Life刷步" />
+    <meta name="description" content="运动助手是一款免费的刷步平台，解放您的双脚，轻松修改微信支付宝步数" />
+    
+   
+    <script src="https://www.layuicdn.com/layui-v2.6.8/layui.js"></script>
+    <link rel="stylesheet" href="https://www.layuicdn.com/layui-v2.6.8/css/layui.css">
+    
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1E90FF;
+            --secondary-color: #00C6FF;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #f44336;
+            --light-bg: #f8f9fa;
+            --dark-text: #333;
+            --light-text: #666;
+            --border-color: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark-text);
+            min-height: 100vh;
+            padding: 20px 10px 70px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin: 5px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .logo i {
+            font-size: 36px;
+            color: var(--primary-color);
+        }
+        
+        .version-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .main-content {
+            padding: 25px 20px;
+        }
+        
+        .form-container {
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-text);
+            font-size: 15px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2);
+            outline: none;
+            background: white;
+        }
+        
+        .form-input::placeholder {
+            color: #a0aec0;
+        }
+        
+        .api-selector {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        
+        .api-selector label {
+            margin-right: 15px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .api-selector select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .warning-box {
+            background-color: #fffde7;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .warning-box strong {
+            color: var(--warning-color);
+        }
+        
+        .double-click-hint {
+            color: var(--primary-color);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            min-height: 24px;
+            color: var(--danger-color);
+            font-weight: 500;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            width: calc(50% - 15px);
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card i {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .feature-card p {
+            font-size: 13px;
+            color: var(--light-text);
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--light-text);
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .runtime {
+            margin: 10px 0;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(30, 144, 255, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(30, 144, 255, 0.6);
+        }
+        
+        .popup {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 280px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            z-index: 1001;
+            transform: scale(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s;
+        }
+        
+        .popup.show {
+            transform: scale(1);
+        }
+        
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .popup-header h3 {
+            color: var(--primary-color);
+        }
+        
+        .close-popup {
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+        
+        .popup-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .popup-link {
+            display: block;
+            padding: 10px 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .popup-link:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .saved-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--warning-color);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 50px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        @media (max-width: 480px) {
+            .feature-card {
+                width: 100%;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+        
+        /* 密钥验证模态框样式 */
+        .key-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .key-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .key-modal h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .key-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .key-submit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .key-submit-btn:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+ 
+    <div class="saved-notification" id="savedNotification">
+        <i class="fas fa-check-circle"></i> 信息已保存!
+    </div>
+    
+    <div class="toast" id="apiToast">
+        <i class="fas fa-exclamation-circle"></i> 请注意，您必须成功过才可以使用此接口
+    </div>
+    
+  
+    <div class="key-modal" id="keyModal">
+        <div class="key-modal-content">
+            <h2>请输入访问密钥</h2>
+            <input type="password" class="key-input" id="keyInput" placeholder="Q群933915676获取">
+            <button class="key-submit-btn" id="keySubmitBtn">验证</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-walking"></i>
+            </div>
+            <h1>zc运动助手</h1>
+            <p>解放双脚，一键修改运动步数</p>
+            <div class="version-tag">v1.2.9</div>
+        </div>
+        <div class="main-content">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value">98800</div>
+                    <div class="stat-label">最大步数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="current-time">00:00:00</div>
+                    <div class="stat-label">当前时间</div>
+                </div>
+            </div>
+            
+            <div class="form-container">
+                <div class="api-selector">
+                    <label for="api-select">选择接口：</label>
+                    <select id="api-select">
+                        <option value="main">新用户专用</option>
+                        <option value="backup">用过新用户并成功</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-user"></i> Zepp Life登录账号</label>
+                    <input type="text" id="phone" class="form-input" placeholder="请输入手机号或邮箱">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-lock"></i> Zepp Life登录密码</label>
+                    <input type="password" id="pwd" class="form-input" placeholder="请输入密码">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-shoe-prints"></i> 修改的步数 (1~98800)</label>
+                    <input type="text" id="step" class="form-input" placeholder="建议55000以下">
+                </div>
+                
+                <div class="warning-box">
+                    <strong>重要提示：</strong> 
+                    新用户接口是跳转提交，在跳转页面停留7秒左右再返回，否则操作无效。请自行核对帐号密码是否正确。
+                    <div class="double-click-hint">(双击此处可直接跳转)</div>
+                </div>
+                
+                <button class="submit-btn" id="submit-btn" type="button">
+                    <i class="fas fa-paper-plane"></i> 修改步数
+                </button>
+                
+                <div class="message" id="message"></div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>一键修改</h3>
+                    <p>快速修改微信支付宝步数</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>安全可靠</h3>
+                    <p>加密传输保障账号安全</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sync-alt"></i>
+                    <h3>实时同步</h3>
+                    <p>步数实时同步到微信支付宝</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-infinity"></i>
+                    <h3>永久免费</h3>
+                    <p>提供永久免费基础服务</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <div class="runtime" id="runtime">本站已运行：0年 0月 0天 0小时 0分 0秒</div>
+            <p>&copy; 2023～2025 zc. 保留所有权利.</p>
+            <p>当前版本号: zc出品1.2.9</p>
+            <p><a href="#" id="user-agreement-link">《用户协议/问题》</a></p>
+        </div>
+    </div>
+    
+    <!-- 悬浮按钮 -->
+    <div class="floating-btn" id="floating-button">
+        <i class="fas fa-users"></i>
+    </div>
+    
+    <!-- 弹出窗口 -->
+    <div class="popup" id="popup">
+        <div class="popup-header">
+            <h3>加入Q群</h3>
+            <div class="close-popup" id="close-popup">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="popup-links">
+            <a href="https://qm.qq.com/q/kd1bhegrAs" class="popup-link" target="_blank">
+                <i class="fab fa-qq"></i> 点我加入Q群1
+            </a>
+            <a href="https://qm.qq.com/q/6LUFfPO5Xy" class="popup-link" target="_blank">
+                <i class="fab fa-qq"></i> 点我加入Q群2
+            </a>
+            <a href="http://zcfx.vvvv.ee/sport" class="popup-link" target="_blank">
+                <i class="fas fa-globe"></i> 网页版
+            </a>
+            <a href="https://docs.qq.com/doc/DT0ZCZUdrbUlad2Ju" class="popup-link" target="_blank">
+                <i class="fas fa-sync-alt"></i> 手动检查更新
+            </a>
+        </div>
+    </div>
+    
+    <!-- 用户协议弹窗 -->
+    <div class="modal-overlay" id="agreement-modal" style="display: none;">
+        <div class="agreement-container">
+            <div class="agreement-header">
+                用户协议
+            </div>
+            <div class="agreement-content" id="agreement-content">
+                <h2>一. 隐私政策</h2>
+                <p>我们高度重视您的隐私权。本隐私政策说明了我们如何收集、使用、披露、转移和存储您的信息。</p>
+                <p>1. 本站不收集任何个人信息</p>
+                
+                <h2>二. 免责声明</h2>
+                <p>1. 使用本站发生任何不可逆的后果均与我无关，建议勿进</p>
+                <p>2. 在法律的范围内，最终解释权归 zc (zc_zcblue@126.com) 所有</p>
+                
+                <h2>三. 使用说明</h2>
+                <p>1. 下载 zepp Life，邮箱注册登录，然后进入我的→第三方接入→微信→扫描二维码绑定，随后，新用户使用[新用户接口]提交，否则无效</p>
+                
+                <h2>四. 常见问题</h2>
+                <p>1. 不同步怎么回事？答: 新用户用新用户接口，并检查 zepp Life内步数是否为125，如是，就换一个帐号</p>
+                <p>2. 为什么走路不增加了？答: 正常，并且步数只大不小</p>
+                <p>3. 为什么刷完之后 zepp Life 帐号就退了？答: 正常</p>
+                <p>4. 我微信运动封了，怎么办？答: 凉拌！等7天，第二次14天</p>
+                <p>5. 我想要自动步数怎么办？答: 联系我开通自动步数，价格便宜，一月2r，半年6，一年10</p>
+                <p>6. 我想要自动步数，但不想充钱怎么办？答: 可以联系我做任务免费获取！</p>
+                
+                <div style="height: 100px;"></div>
+            </div>
+            <div class="agreement-footer">
+                <div class="footer-buttons">
+                    <button class="reject-button" id="reject-btn">拒绝</button>
+                    <button class="agree-button" id="agree-btn" disabled>同意 (<span id="countdown">10</span>s)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        
+        const SECRET_KEY = "ZCQAZWSXPLMOKN"; 
+        
+        
+        document.addEventListener('DOMContentLoaded', function() {
+        
+            if (!localStorage.getItem('keyVerified') || localStorage.getItem('keyVerified') !== SECRET_KEY) {
+                document.getElementById('keyModal').style.display = 'flex';
+            } else {
+                document.getElementById('keyModal').style.display = 'none';
+            }
+            
+       
+            document.getElementById('keySubmitBtn').addEventListener('click', function() {
+                const inputKey = document.getElementById('keyInput').value;
+                if (inputKey === SECRET_KEY) {
+                    localStorage.setItem('keyVerified', inputKey);
+                    document.getElementById('keyModal').style.display = 'none';
+                    showToast('密钥验证成功！');
+                } else {
+                    alert('密钥错误，请重新输入！');
+                    document.getElementById('keyInput').value = '';
+                }
+            });
+            
+          
+            loadSavedData();
+            
+        
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+          
+            updateRuntime();
+            setInterval(updateRuntime, 1000);
+            
+         
+            const floatingButton = document.getElementById('floating-button');
+            const popup = document.getElementById('popup');
+            const closePopup = document.getElementById('close-popup');
+            
+            floatingButton.addEventListener('click', function() {
+                popup.classList.toggle('show');
+            });
+            
+            closePopup.addEventListener('click', function() {
+                popup.classList.remove('show');
+            });
+            
+          
+            document.getElementById('phone').addEventListener('input', saveInputData);
+            document.getElementById('pwd').addEventListener('input', saveInputData);
+            document.getElementById('step').addEventListener('input', saveInputData);
+            
+          
+            const warningBox = document.querySelector('.warning-box');
+            warningBox.addEventListener('dblclick', proceedToRedirect);
+            
+           
+            document.getElementById('submit-btn').addEventListener('click', login);
+            
+           
+            document.getElementById('api-select').addEventListener('change', function() {
+               
+            });
+            
+       
+            document.getElementById('user-agreement-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('agreement-modal').style.display = 'flex';
+                initializeAgreement();
+            });
+        });
+        
+      
+        function loadSavedData() {
+            const savedData = JSON.parse(localStorage.getItem('userInputData')) || {};
+            if (savedData.phone) document.getElementById('phone').value = savedData.phone;
+            if (savedData.pwd) document.getElementById('pwd').value = savedData.pwd;
+            if (savedData.step) document.getElementById('step').value = savedData.step;
+        }
+        
+       
+        function saveInputData() {
+            const inputData = {
+                phone: document.getElementById('phone').value,
+                pwd: document.getElementById('pwd').value,
+                step: document.getElementById('step').value
+            };
+            
+            localStorage.setItem('userInputData', JSON.stringify(inputData));
+            
+         
+            const notification = document.getElementById('savedNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+        
+     
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN');
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+     
+        function updateRuntime() {
+            const startTime = new Date('2024-10-06T14:13:00');
+            const now = new Date();
+            const diff = now - startTime;
+            
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const years = Math.floor(days / 365);
+            const months = Math.floor((days % 365) / 30);
+            const remainingDays = days % 30;
+            const remainingHours = hours % 24;
+            const remainingMinutes = minutes % 60;
+            const remainingSeconds = seconds % 60;
+            
+            document.getElementById('runtime').textContent = 
+                `本站已运行：${years}年 ${months}月 ${remainingDays}天 ${remainingHours}小时 ${remainingMinutes}分 ${remainingSeconds}秒`;
+        }
+        
+       
+        function login() {
+            
+            document.getElementById('message').textContent = '';
+            
+            const phone = document.getElementById('phone').value;
+            if (!phone) {
+                document.getElementById('message').textContent = '手机号或者邮箱不能为空！';
+                return;
+            }
+            
+            const pwd = document.getElementById('pwd').value;
+            if (!pwd) {
+                document.getElementById('message').textContent = '密码不能为空！';
+                return;
+            }
+            
+            const step = document.getElementById('step').value;
+            if (!step) {
+                document.getElementById('message').textContent = '步数不能为空！';
+                return;
+            }
+            
+            if (isNaN(step) || step < 1 || step > 98800) {
+                document.getElementById('message').textContent = '请输入1-98800之间的有效步数！';
+                return;
+            }
+            
+       
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            
+            const apiType = document.getElementById('api-select').value;
+            
+            if (apiType === 'main') {
+               
+                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 提交中 (4s)`;
+                
+                let countdown = 4;
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 提交中 (${countdown}s)`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        proceedToRedirect();
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> 修改步数`;
+                    }
+                }, 1000);
+            } else {
+            
+                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 提交中`;
+                
+                const apiUrl = `1.php?account=${encodeURIComponent(phone)}&password=${encodeURIComponent(pwd)}&steps=${step}`;
+                
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 1) {
+                            document.getElementById('message').textContent = '修改成功！';
+                            document.getElementById('message').style.color = 'green';
+                        } else {
+                            let errorMsg = '未知错误';
+                            if (data.error === 0) errorMsg = '用户名或密码错误';
+                            else if (data.error === 2) errorMsg = '账号格式错误';
+                            else if (data.error === 3) errorMsg = '参数错误';
+                            
+                            document.getElementById('message').textContent = errorMsg;
+                            document.getElementById('message').style.color = 'red';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('message').textContent = '请求失败: ' + error.message;
+                        document.getElementById('message').style.color = 'red';
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> 修改步数`;
+                    });
+            }
+        }
+        
+       
+        function proceedToRedirect() {
+            const phone = document.getElementById('phone').value;
+            const pwd = document.getElementById('pwd').value;
+            const step = document.getElementById('step').value;
+            const apiType = document.getElementById('api-select').value;
+            
+            let apiUrl;
+            if (apiType === 'main') {
+                
+                apiUrl = `http://api.leafone.cn/api/misport?user=${phone}&password=${pwd}&step=${step}`;
+                
+                
+                const proxyUrl = `https://zhale.me/http/?{"Target":"${apiUrl}","Options":{"ISPs":["移动","电信","联通","海外"]},"IsContinue":false}`;
+                
+               
+                window.open(proxyUrl, '_blank');
+            }
+        }
+        
+        
+        function showToast(message) {
+            const toast = document.getElementById('apiToast');
+            toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        
+        function initializeAgreement() {
+            let seconds = 10;
+            const countdownElement = document.getElementById('countdown');
+            const agreeBtn = document.getElementById('agree-btn');
+            
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    agreeBtn.disabled = false;
+                    countdownElement.style.display = 'none';
+                    agreeBtn.textContent = '同意';
+                }
+            }, 1000);
+            
+            agreeBtn.addEventListener('click', function() {
+                localStorage.setItem('agreementAccepted', 'true');
+                document.getElementById('agreement-modal').style.display = 'none';
+                alert('您已同意用户协议！');
+            });
+            
+            document.getElementById('reject-btn').addEventListener('click', function() {
+                if(confirm('您确定要拒绝用户协议吗？拒绝后将无法使用我们的服务。')) {
+                    document.getElementById('agreement-modal').style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
