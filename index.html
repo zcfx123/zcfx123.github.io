@@ -136,7 +136,7 @@
     <div class="profile">
         <img src="1.png" alt="你看你M呢？">
         <div class="name">zc</div>
-        <div class="slogan">有的人生出就在罗马，有的人出生就是牛马</div>
+        <div class="slogan" id="random-quote">有的人生出就在罗马，有的人出生就是牛马</div>
     </div>
 
     <div class="contact">
@@ -148,13 +148,13 @@
             <a href="https://docs.qq.com/doc/DT0ZCZUdrbUlad2Ju" target="_blank">zc安卓刷步数</a>
         </div>
         <div class="project">
-            <a href="http://zcfx.vvvv.ee/sport" target="_blank">zc网页版刷步数</a>
+            <a href="http://zcfx.xo.je/sport" target="_blank">zc网页版刷步数</a>
         </div>
         <div class="project">
             <a href="https://zcfx.neocities.org/zcydzs/zczd" target="_blank">zc自动刷步数</a>
         </div>
         <div class="project">
-            <a href="http://zcfx.xo.je/2.php" target="_blank">zc聊天室</a>
+            <a href="http://zcfx.xo.je/t.php" target="_blank">zc聊天室</a>
         </div>
           <div class="project">
             <a href="http://zcfx.xo.je/zcys2.php" target="_blank">zc影视</a>
@@ -187,5 +187,24 @@
     <div class="copyright">
         © 2023～2025 zc 保留所有权利
     </div>
+
+    <script>
+        const quotes = [
+            "有的人生出就在罗马，有的人出生就是牛马",
+            "最大的痛苦不是失败，而是到了99%才失败",
+            "一个天，一个地是永远不能相遇的",
+            "丑小鸭本身就是天鹅，那是它应得的",
+            "人艰不拆",
+            "让自己在起点输了，也比终点输了好"
+        ];
+        function getRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            return quotes[randomIndex];
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const quoteElement = document.getElementById('random-quote');
+            quoteElement.textContent = getRandomQuote();
+        });
+    </script>
 </body>
-            </html>
+</html>
