@@ -615,6 +615,8 @@
             let activeLyricIndex = -1;
             let isDragging = false;
             let currentApi = 'juhe'; // 默认使用聚合API
+            const API_BASE_URL = 'https://sdkapi.hhlqilongzhu.cn/api/juhe_dgmusic/'; // 聚合音乐API基础地址
+            const API_KEY = 'DragonA629E482AE61898DEA06A9FBC5CF13ED'; // API访问密钥
             
             // 初始化
             updatePlaylistDisplay();
@@ -659,7 +661,8 @@
                 // 根据当前选择的API构建不同的URL
                 let apiUrl;
                 if (currentApi === 'juhe') {
-                    apiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(query)}&type=text`;
+                    // 聚合音乐搜索请求
+                    apiUrl = `${API_BASE_URL}?msg=${encodeURIComponent(query)}&type=text&key=${API_KEY}`;
                 } else {
                     apiUrl = `https://wwm.34bc.com/API/dg_qishuimusic.php?type=text&msg=${encodeURIComponent(query)}`;
                 }
@@ -760,7 +763,8 @@
                 // 构建获取歌曲详情的API URL
                 let apiUrl;
                 if (song.api === 'juhe') {
-                    apiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(song.query)}&type=text&n=${song.index}`;
+                 
+                    apiUrl = `${API_BASE_URL}?msg=${encodeURIComponent(song.query)}&type=text&n=${song.index}&key=${API_KEY}`;
                 } else {
                     apiUrl = `https://wwm.34bc.com/API/dg_qishuimusic.php?type=text&msg=${encodeURIComponent(song.query)}&n=${song.index}`;
                 }
@@ -825,6 +829,10 @@
                             info.artist = line.replace('歌手：', '').trim();
                         } else if (line.startsWith('播放链接：')) {
                             info.url = line.replace('播放链接：', '').trim();
+                        }
+                        // 新增：如果有封面链接，也解析出来
+                        else if (line.startsWith('封面：')) {
+                            info.cover = line.replace('封面：', '').trim();
                         }
                     });
                 } else {
@@ -1015,30 +1023,14 @@
             function handleDrag(e) {
                 if (!isDragging) return;
                 
-                const containerWidth = progressContainer.clientWidth;
-                let clientX;
-                
-                if (e.type.includes('touch')) {
-                    clientX = e.touches[0].clientX;
-                } else {
-                    clientX = e.clientX;
-                }
-                
                 const rect = progressContainer.getBoundingClientRect();
-                let position = (clientX - rect.left) / containerWidth;
+                const pos = (e.type.includes('mouse') ? e.clientX : e.touches[0].clientX) - rect.left;
+                const percent = Math.max(0, Math.min(1, pos / rect.width));
+                playerProgress.style.width = `${percent * 100}%`;
                 
-                // 限制在0-1之间
-                position = Math.max(0, Math.min(1, position));
-                
-                const duration = audioPlayer.duration || 0;
-                const newTime = position * duration;
-                
-                // 更新进度条显示
-                playerProgress.style.width = `${position * 100}%`;
-                
-                // 如果用户只是拖动而不释放，不更新播放时间
-                if (e.type === 'mouseup' || e.type === 'touchend') {
-                    audioPlayer.currentTime = newTime;
+                const duration = audioPlayer.duration;
+                if (duration) {
+                    audioPlayer.currentTime = duration * percent;
                 }
             }
             
@@ -1050,171 +1042,90 @@
                 document.removeEventListener('touchend', stopDrag);
             }
             
-            // 点击进度条跳转
-            progressContainer.addEventListener('click', function(e) {
-                if (isDragging) return;
+            // 下一首
+            nextBtn.addEventListener('click', function() {
+                if (playlist.length === 0) return;
                 
-                const width = this.clientWidth;
-                const rect = this.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const duration = audioPlayer.duration || 0;
-                audioPlayer.currentTime = (clickX / width) * duration;
-            });
-            
-            // 歌曲结束
-            audioPlayer.addEventListener('ended', function() {
-                if (isLooping) {
-                    audioPlayer.currentTime = 0;
-                    audioPlayer.play();
-                } else if (currentPlaylist.length > 0) {
-                    playNextInPlaylist();
-                } else if (currentSongIndex < songListData.length - 1) {
-                    playSong(songListData[currentSongIndex + 1]);
+                if (isRandomMode) {
+                    // 随机播放模式
+                    let randomIndex;
+                    do {
+                        randomIndex = Math.floor(Math.random() * playlist.length);
+                    } while (randomIndex === currentSongIndex && playlist.length > 1);
+                    currentSongIndex = randomIndex;
                 } else {
-                    playBtn.textContent = '▶';
+                    // 顺序播放模式
+                    currentSongIndex = (currentSongIndex + 1) % playlist.length;
                 }
+                
+                playSong(playlist[currentSongIndex]);
             });
             
             // 上一首
             prevBtn.addEventListener('click', function() {
-                if (currentPlaylist.length > 0) {
-                    playPrevInPlaylist();
-                } else if (currentSongIndex > 0) {
-                    playSong(songListData[currentSongIndex - 1]);
+                if (playlist.length === 0) return;
+                
+                if (isRandomMode) {
+                    // 随机播放模式
+                    let randomIndex;
+                    do {
+                        randomIndex = Math.floor(Math.random() * playlist.length);
+                    } while (randomIndex === currentSongIndex && playlist.length > 1);
+                    currentSongIndex = randomIndex;
+                } else {
+                    // 顺序播放模式
+                    currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
                 }
+                
+                playSong(playlist[currentSongIndex]);
             });
             
-            // 下一首
-            nextBtn.addEventListener('click', function() {
-                if (currentPlaylist.length > 0) {
-                    playNextInPlaylist();
-                } else if (currentSongIndex < songListData.length - 1) {
-                    playSong(songListData[currentSongIndex + 1]);
-                }
-            });
-            
-            // 播放歌单中的下一首
-            function playNextInPlaylist() {
-                if (isRandomMode) {
-                    const randomIndex = Math.floor(Math.random() * currentPlaylist.length);
-                    playSongFromPlaylist(randomIndex);
-                } else {
-                    const nextIndex = (currentSongIndex + 1) % currentPlaylist.length;
-                    playSongFromPlaylist(nextIndex);
-                }
-            }
-            
-            // 播放歌单中的上一首
-            function playPrevInPlaylist() {
-                if (isRandomMode) {
-                    const randomIndex = Math.floor(Math.random() * currentPlaylist.length);
-                    playSongFromPlaylist(randomIndex);
-                } else {
-                    const prevIndex = (currentSongIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
-                    playSongFromPlaylist(prevIndex);
-                }
-            }
-            
-            // 从歌单播放歌曲
-            function playSongFromPlaylist(index) {
-                const song = currentPlaylist[index];
-                currentSong = song;
-                currentSongIndex = index;
-                
-                // 显示加载中
-                loadingEl.style.display = 'block';
-                errorEl.style.display = 'none';
-                
-                // 构建获取歌曲详情的API URL
-                let apiUrl;
-                if (song.api === 'juhe') {
-                    apiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(song.query)}&type=text&n=1`;
-                } else {
-                    apiUrl = `https://wwm.34bc.com/API/dg_qishuimusic.php?type=text&msg=${encodeURIComponent(song.query)}&n=1`;
-                }
-                
-                // 获取歌曲详情
-                fetch(apiUrl)
-                    .then(response => response.text())
-                    .then(data => {
-                        loadingEl.style.display = 'none';
-                        
-                        if (!data.trim()) {
-                            showError('无法获取歌曲信息');
-                            return;
-                        }
-                        
-                        // 解析返回的文本数据
-                        const songInfo = parseSongInfo(data, song.api);
-                        
-                        if (!songInfo.url) {
-                            showError('无法获取歌曲播放链接');
-                            return;
-                        }
-                        
-                        // 更新播放器UI
-                        playerSongTitle.textContent = songInfo.title || song.title;
-                        playerSongArtist.textContent = songInfo.artist || song.artist;
-                        
-                        // 设置音频源
-                        audioPlayer.src = songInfo.url;
-                        
-                        // 播放音乐
-                        audioPlayer.play();
-                        playBtn.textContent = '⏸';
-                        
-                        // 获取歌词（仅聚合API支持）
-                        if (song.api === 'juhe') {
-                            fetchLyrics(song.query, song.index);
-                        } else {
-                            lyricsData = [];
-                            lyricsWrapper.innerHTML = '<div class="lyrics-line">汽水音乐暂不支持歌词显示</div>';
-                            lyricsContainer.style.display = 'block';
-                        }
-                    })
-                    .catch(error => {
-                        loadingEl.style.display = 'none';
-                        showError('获取歌曲信息失败');
-                        console.error('获取歌曲信息错误:', error);
-                    });
-            }
-            
-            // 循环播放
+            // 循环播放切换
             loopBtn.addEventListener('click', function() {
                 isLooping = !isLooping;
                 loopBtn.style.color = isLooping ? '#1db954' : '#b3b3b3';
             });
             
-            // 下载功能
-            downloadBtn.addEventListener('click', function() {
-                if (audioPlayer.src) {
-                    const link = document.createElement('a');
-                    link.href = audioPlayer.src;
-                    link.download = `${playerSongTitle.textContent || 'song'}.mp3`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+            // 音频结束时自动播放下一首
+            audioPlayer.addEventListener('ended', function() {
+                if (isLooping) {
+                    // 单曲循环
+                    audioPlayer.currentTime = 0;
+                    audioPlayer.play();
+                } else {
+                    // 播放下一首
+                    nextBtn.click();
                 }
             });
             
-            // 歌单功能
+            // 下载歌曲
+            downloadBtn.addEventListener('click', function() {
+                if (!currentSong || !audioPlayer.src) return;
+                
+                const a = document.createElement('a');
+                a.href = audioPlayer.src;
+                a.download = `${playerSongTitle.textContent} - ${playerSongArtist.textContent}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+            
+            // 显示/隐藏歌单
             playlistBtn.addEventListener('click', function() {
                 playlistModal.classList.add('active');
-                currentPlaylist = [...playlist]; // 复制歌单
             });
             
             closePlaylist.addEventListener('click', function() {
                 playlistModal.classList.remove('active');
             });
             
-            // 顺序播放模式
+            // 播放模式切换
             sequentialBtn.addEventListener('click', function() {
                 isRandomMode = false;
                 sequentialBtn.style.backgroundColor = '#1db954';
                 randomBtn.style.backgroundColor = '#404040';
             });
             
-            // 随机播放模式
             randomBtn.addEventListener('click', function() {
                 isRandomMode = true;
                 randomBtn.style.backgroundColor = '#1db954';
@@ -1223,29 +1134,18 @@
             
             // 添加到歌单
             function addToPlaylist(song) {
-                if (!playlist.some(item => item.title === song.title && item.artist === song.artist && item.api === song.api)) {
-                    playlist.push({
-                        title: song.title,
-                        artist: song.artist,
-                        query: song.query,
-                        index: song.index,
-                        api: song.api
-                    });
-                    savePlaylist();
+                // 检查是否已在歌单中
+                const exists = playlist.some(item => 
+                    item.title === song.title && 
+                    item.artist === song.artist && 
+                    item.api === song.api
+                );
+                
+                if (!exists) {
+                    playlist.push(song);
+                    localStorage.setItem('playlist', JSON.stringify(playlist));
                     updatePlaylistDisplay();
                 }
-            }
-            
-            // 从歌单移除
-            function removeFromPlaylist(index) {
-                playlist.splice(index, 1);
-                savePlaylist();
-                updatePlaylistDisplay();
-            }
-            
-            // 保存歌单到本地存储
-            function savePlaylist() {
-                localStorage.setItem('playlist', JSON.stringify(playlist));
             }
             
             // 更新歌单显示
@@ -1258,54 +1158,348 @@
                 }
                 
                 playlist.forEach((song, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'playlist-item';
-                    item.innerHTML = `
+                    const div = document.createElement('div');
+                    div.className = 'playlist-item';
+                    div.innerHTML = `
                         <div class="playlist-item-info">
-                            <div class="playlist-item-title">${song.title} <span style="font-size: 12px; color: #666;">(${song.api === 'qishui' ? '汽水' : '聚合'})</span></div>
+                            <div class="playlist-item-title">${song.title}</div>
                             <div class="playlist-item-artist">${song.artist}</div>
                         </div>
-                        <div class="playlist-item-remove">×</div>
+                        <div class="playlist-item-remove" data-index="${index}">×</div>
                     `;
                     
                     // 点击播放
-                    item.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('playlist-item-remove')) {
-                            currentPlaylist = [...playlist]; // 设置当前播放列表
-                            playSongFromPlaylist(index);
-                            playlistModal.classList.remove('active');
+                    div.querySelector('.playlist-item-info').addEventListener('click', () => {
+                        currentSongIndex = index;
+                        playSong(song);
+                        playlistModal.classList.remove('active');
+                    });
+                    
+                    // 移除歌曲
+                    div.querySelector('.playlist-item-remove').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = parseInt(e.currentTarget.dataset.index);
+                        playlist.splice(idx, 1);
+                        localStorage.setItem('playlist', JSON.stringify(playlist));
+                        updatePlaylistDisplay();
+                        
+                        // 如果移除的是当前播放的歌曲
+                        if (idx === currentSongIndex) {
+                            currentSongIndex = -1;
+                            if (playlist.length > 0) {
+                                currentSongIndex = 0;
+                                playSong(playlist[0]);
+                            } else {
+                                // 清空播放器
+                                audioPlayer.src = '';
+                                playBtn.textContent = '▶';
+                                playerSongTitle.textContent = '未播放';
+                                playerSongArtist.textContent = '--';
+                                playerProgress.style.width = '0%';
+                                lyricsContainer.style.display = 'none';
+                            }
+                        } else if (idx < currentSongIndex) {
+                            currentSongIndex--;
                         }
                     });
                     
-                    // 点击移除
-                    const removeBtn = item.querySelector('.playlist-item-remove');
-                    removeBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        removeFromPlaylist(index);
-                    });
-                    
-                    playlistContent.appendChild(item);
+                    playlistContent.appendChild(div);
                 });
             }
             
-            // 显示错误
+            // 显示错误信息
             function showError(message) {
                 errorEl.textContent = message;
                 errorEl.style.display = 'block';
             }
-            
-            // 点击当前播放歌曲信息显示详情
-            playerBar.querySelector('.player-info').addEventListener('click', function() {
-                if (songListData.length > 0 && currentSongIndex >= 0) {
-                    displaySongList(songListData);
-                    resultsModal.classList.add('active');
-                }
-            });
-            
-            // 初始化播放模式按钮状态
-            sequentialBtn.style.backgroundColor = '#1db954';
-            randomBtn.style.backgroundColor = '#404040';
         });
     </script>
 </body>
 </html>
+
+   <style>
+        #updateModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #modalContent {
+            position: relative;
+            background-color: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.3);
+        }
+
+        #updateButton {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #updateButton:hover {
+            background-color: #0056b3;
+        }
+
+        /* 关闭按钮*/
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        #closeButton::before,
+        #closeButton::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 3px;
+            background-color: #999;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        #closeButton::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        #closeButton:hover::before,
+        #closeButton:hover::after {
+            background-color: #888;
+        }
+
+        #updateModal::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 弹窗的样式 */
+        #textModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        #textModalContent {
+            position: relative;
+            background-color: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.3);
+        }
+
+        #textCloseButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        #textCloseButton::before,
+        #textCloseButton::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 3px;
+            background-color: #999;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        #textCloseButton::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        #textCloseButton:hover::before,
+        #textCloseButton:hover::after {
+            background-color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="updateModal">
+        <div id="modalContent">
+            <p>发现新版本，是否更新？</p>
+            <h6>点更新后自动静默下载，可下滑状态栏或文件管理查看安装</h6>
+            <button id="updateButton" type="button"></button>
+            <button id="closeButton" type="button"></button>
+        </div>
+    </div>
+    <div id="textModal">
+        <div id="textModalContent">
+            <p id="textContent"></p>
+            <button id="textCloseButton" type="button"></button>
+        </div>
+    </div>
+    <script>
+        const apiUrl = 'https://v2.xxapi.cn/api/title?url=https://zcfx.neocities.org/zcyy/1.0.7';
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', apiUrl, true);
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        const dataValue = response.data;
+                        if (dataValue && dataValue!== '暂无更新') {
+                            const updateButton = document.getElementById('updateButton');
+                            updateButton.textContent = '前往更新';
+                            if (typeof dataValue ==='string' &&!dataValue.startsWith('http')) {
+                              
+                                updateButton.onclick = function () {
+                                    document.getElementById('textContent').textContent = dataValue;
+                                    document.getElementById('textModal').style.display = 'flex';
+                                };
+                            } else if (typeof dataValue ==='string' && dataValue.startsWith('http')) {
+                             
+                                updateButton.onclick = function () {
+                                    window.location.href = dataValue;
+                                };
+                            }
+                            const closeButton = document.getElementById('closeButton');
+                            closeButton.onclick = function () {
+                                localStorage.setItem('ignoreUpdate', true);
+                                document.getElementById('updateModal').style.display = 'none';
+                            };
+                            document.getElementById('updateModal').style.display = 'flex';
+                        }
+                    } catch (error) {
+                        console.error('解析JSON数据错误:', error);
+                    }
+                } else {
+                    console.error('请求失败，状态码:', xhr.status);
+                }
+            }
+        };
+
+        xhr.send();
+        document.getElementById('textCloseButton').onclick = function () {
+            document.getElementById('textModal').style.display = 'none';
+        };
+    </script>
+    
+    <title>公告弹窗</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .announcement-popup {
+            position: fixed;
+            top: 150px;
+            left: -400px; 
+            width: 300px;
+            background-color: #00C6FF;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            transition: left 0.5s ease-in-out;
+            z-index: 1000;
+        }
+
+        .announcement-popup.show {
+            left: 2px; 
+        }
+
+        .announcement-content {
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 50%;
+            width: 3px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-btn:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="announcement-popup" id="announcementPopup">
+        <div class="announcement-content">
+            <span class="close-btn" id="closeBtn">&times;</span>
+            <p id="announcementText">公告加载中...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('announcementPopup');
+            const closeBtn = document.getElementById('closeBtn');
+            const announcementText = document.getElementById('announcementText');
+
+            
+            popup.classList.add('show');
+
+           
+            fetch('https://v2.xxapi.cn/api/title?url=https://zcfx.neocities.org/zcyy/gg')
+                .then(response => response.json())
+                .then(data => {
+                    announcementText.textContent = data.data; 
+                })
+                .catch(error => {
+                    console.error('获取公告内容失败:', error);
+                    announcementText.textContent = '公告加载失败，请稍后重试。';
+                });
+
+           
+            closeBtn.addEventListener('click', function() {
+                popup.classList.remove('show');
+                setTimeout(() => {
+                    popup.style.display = 'none'; 
+                }, 500); 
+            });
+        });
+    </script>
+</body>
+    </html>
