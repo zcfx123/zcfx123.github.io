@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <title>图片3x3排版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      padding: 15px;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .upload-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 12px 24px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    /* 适配手机的3x3网格 */
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .image-item {
+      width: 100%;
+      aspect-ratio: 1/1; /* 固定正方形比例 */
+      border: 2px dashed #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      background: #fff;
+    }
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #downloadLink {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>选择9张图片，3x3排版保存</h2>
+    <div class="upload-container">
+      <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+    </div>
+    <div class="image-grid" id="imageGrid">
+      <div class="image-item" data-index="0" onclick="selectSingleImage(0)"></div>
+      <div class="image-item" data-index="1" onclick="selectSingleImage(1)"></div>
+      <div class="image-item" data-index="2" onclick="selectSingleImage(2)"></div>
+      <div class="image-item" data-index="3" onclick="selectSingleImage(3)"></div>
+      <div class="image-item" data-index="4" onclick="selectSingleImage(4)"></div>
+      <div class="image-item" data-index="5" onclick="selectSingleImage(5)"></div>
+      <div class="image-item" data-index="6" onclick="selectSingleImage(6)"></div>
+      <div class="image-item" data-index="7" onclick="selectSingleImage(7)"></div>
+      <div class="image-item" data-index="8" onclick="selectSingleImage(8)"></div>
+    </div>
+    <div class="upload-container">
+      <button class="btn" id="saveBtn">保存图片</button>
+    </div>
+    <a id="downloadLink" download="image.jpg"></a>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const downloadLink = document.getElementById('downloadLink');
+    const imageItems = document.querySelectorAll('.image-item');
+    const images = Array(9).fill(null); // 存储9张图片
+
+    // 批量选择图片
+    selectBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // 批量处理选中的图片
+    fileInput.addEventListener('change', (e) => {
+      const files = e.target.files;
+      if (!files.length) return;
+
+      // 最多处理9张图，按顺序填充
+      const handleCount = Math.min(files.length, 9);
+      for (let i = 0; i < handleCount; i++) {
+        loadAndShowImage(files[i], i);
+      }
+      fileInput.value = ''; // 重置选择器，允许重复选同一张图
+    });
+
+    // 单独选择某一格的图片
+    function selectSingleImage(index) {
+      const singleFileInput = document.createElement('input');
+      singleFileInput.type = 'file';
+      singleFileInput.accept = 'image/*';
+      singleFileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) loadAndShowImage(file, index);
+      };
+      singleFileInput.click();
+    }
+
+    // 加载图片并显示到对应格子
+    function loadAndShowImage(file, index) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          images[index] = img; // 存储图片对象
+          // 更新UI显示
+          const targetItem = document.querySelector(`.image-item[data-index="${index}"]`);
+          targetItem.innerHTML = '';
+          targetItem.appendChild(img);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 保存排版（核心修复：用Blob替代base64直接下载）
+    saveBtn.addEventListener('click', () => {
+      // 1. 创建与手机屏幕适配的Canvas（取屏幕宽度的90%，保证清晰且不溢出）
+      const screenWidth = Math.min(window.innerWidth, 1080) * 0.9;
+      const canvas = document.createElement('canvas');
+      canvas.width = screenWidth;
+      canvas.height = screenWidth; // 正方形排版
+      const ctx = canvas.getContext('2d');
+
+      // 2. 填充白色背景（避免透明）
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 3. 计算每个格子的尺寸
+      const cellSize = canvas.width / 3;
+
+      // 4. 绘制9张图片到Canvas
+      images.forEach((img, index) => {
+        if (img) {
+          const row = Math.floor(index / 3); // 行（0-2）
+          const col = index % 3; // 列（0-2）
+          // 绘制图片（填充格子，保持比例）
+          ctx.drawImage(
+            img,
+            col * cellSize, // 起始X
+            row * cellSize, // 起始Y
+            cellSize,       // 宽度
+            cellSize        // 高度
+          );
+        }
+      });
+
+      // 5. 关键修复：将Canvas转为Blob，再创建下载链接（适配Android系统）
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // 创建临时URL（非base64，适配系统下载）
+          const blobUrl = URL.createObjectURL(blob);
+          downloadLink.href = blobUrl;
+          downloadLink.click(); // 触发下载
+          // 释放URL，避免内存泄漏
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        } else {
+          alert('保存失败，请重试！');
+        }
+      }, 'image/jpeg', 0.9); // JPG格式，0.9质量（平衡清晰度和大小）
+    });
+  </script>
+</body>
+</html>
