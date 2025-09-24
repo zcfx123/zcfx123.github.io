@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小米运动步数修改工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4299e1;
+            color: white;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #3182ce;
+        }
+        .btn:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">运动步数修改</h1>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="account">
+                    zepp Life账号（手机/邮箱）
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="account" type="text" placeholder="请输入小米账号">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                    密码
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="password" type="password" placeholder="请输入密码">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="steps">
+                    修改步数（1-98800）
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="steps" type="number" placeholder="请输入步数" min="1" max="98800">
+            </div>
+            
+            <button id="submitBtn" class="btn">
+                提交修改
+            </button>
+            
+            <div id="result" class="mt-4 text-center hidden">
+                <!-- 结果将显示在这里 -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">使用说明</h2>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                <li>by:zc本工具仅供个人学习、研究使用，请勿滥用</li>
+                <li>使用方法同原来的运动助手</li>
+             
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            const accountInput = document.getElementById('account');
+            const passwordInput = document.getElementById('password');
+            const stepsInput = document.getElementById('steps');
+            const resultDiv = document.getElementById('result');
+            
+            // 禁用微信分享菜单
+            document.addEventListener('WeixinJSBridgeReady', function() {
+                WeixinJSBridge.call('hideOptionMenu');
+            });
+            
+            submitBtn.addEventListener('click', function() {
+                const account = accountInput.value.trim();
+                const password = passwordInput.value.trim();
+                const steps = stepsInput.value.trim();
+                
+                // 验证输入
+                if (!account) {
+                    showResult('请输入小米账号', 'text-red-500');
+                    return;
+                }
+                
+                if (!password) {
+                    showResult('请输入密码', 'text-red-500');
+                    return;
+                }
+                
+                if (!steps || isNaN(steps) || steps < 1 || steps > 98800) {
+                    showResult('请输入有效的步数（1-98800）', 'text-red-500');
+                    return;
+                }
+                
+                // 显示加载状态
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<div class="loading"></div>提交中...';
+                
+                // 发送请求
+                fetch('https://api.aurcoc.cn/API/bushu.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `account=${encodeURIComponent(account)}&password=${encodeURIComponent(password)}&steps=${steps}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error === 0) {
+                        showResult(`修改成功！步数已设置为 ${steps}`, 'text-green-500');
+                    } else {
+                        showResult(`修改成功！：${data.message || '未知错误'}`, 'text-red-500');
+                    }
+                })
+                .catch(error => {
+                    showResult('请求失败，请检查网络或稍后再试', 'text-red-500');
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '提交修改';
+                });
+            });
+            
+            function showResult(message, colorClass) {
+                resultDiv.innerHTML = `<p class="${colorClass}">${message}</p>`;
+                resultDiv.classList.remove('hidden');
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    resultDiv.classList.add('hidden');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+```
