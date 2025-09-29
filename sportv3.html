@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试接口 - 显示IP</title>
+</head>
+<body>
+    <h2>测试真实步数接口</h2>
+    
+    <div>
+        <label>账号:</label>
+        <input type="text" id="username" placeholder="手机号或邮箱">
+    </div>
+    
+    <div>
+        <label>密码:</label>
+        <input type="password" id="password" placeholder="密码">
+    </div>
+    
+    <div>
+        <label>步数:</label>
+        <input type="number" id="steps" placeholder="1-98800" value="10000">
+    </div>
+    
+    <button onclick="testApi()">测试接口</button>
+    
+    <div style="margin-top: 20px;">
+        <h3>请求信息：</h3>
+        <div id="ipInfo">正在获取您的IP地址...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // 获取用户IP地址
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                try {
+                    // 备用IP获取服务
+                    const response = await fetch('https://httpbin.org/ip');
+                    const data = await response.json();
+                    return data.origin;
+                } catch (error2) {
+                    return '无法获取IP';
+                }
+            }
+        }
+
+        // 显示IP信息
+        async function showIPInfo() {
+            const ipInfoDiv = document.getElementById('ipInfo');
+            const userIP = await getUserIP();
+            
+            ipInfoDiv.innerHTML = `
+                <strong>您的IP地址:</strong> ${userIP}<br>
+                <strong>请求将使用此IP发送到:</strong> wzz.wangzouzou.com
+            `;
+        }
+
+        // 测试接口
+        async function testApi() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const steps = document.getElementById('steps').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!username || !password || !steps) {
+                resultDiv.innerHTML = '<span style="color: red;">请填写完整信息</span>';
+                return;
+            }
+            
+            // 获取当前IP
+            const userIP = await getUserIP();
+            
+            resultDiv.innerHTML = `
+                <strong>请求详情:</strong><br>
+                - 使用IP: ${userIP}<br>
+                - 目标接口: wzz.wangzouzou.com<br>
+                - 请求中...
+            `;
+            
+            // 直接调用真实接口
+            const apiUrl = 'https://wzz.wangzouzou.com/motion/api/motion/Xiaomi';
+            
+            // 准备POST数据
+            const formData = new URLSearchParams();
+            formData.append('phone', username);
+            formData.append('pwd', password);
+            formData.append('num', steps);
+            
+            // 记录请求开始时间
+            const startTime = Date.now();
+            
+            // 发送请求
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Origin': 'https://m.cqzz.top',
+                    'Referer': 'https://m.cqzz.top/'
+                },
+                body: formData
+            })
+            .then(response => {
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                return response.json().then(data => ({ data, responseTime }));
+            })
+            .then(({ data, responseTime }) => {
+                console.log('接口响应:', data);
+                
+                let resultHTML = `
+                    <strong>请求完成:</strong><br>
+                    - 使用IP: ${userIP}<br>
+                    - 响应时间: ${responseTime}ms<br>
+                    - 接口响应: 
+                `;
+                
+                if (data.code === 200) {
+                    resultHTML += `<span style="color: green;">成功！步数已设置为: ${steps}</span>`;
+                } else {
+                    resultHTML += `<span style="color: red;">失败: ${data.data || '未知错误'}</span>`;
+                }
+                
+                resultDiv.innerHTML = resultHTML;
+            })
+            .catch(error => {
+                console.error('错误:', error);
+                resultDiv.innerHTML = `
+                    <strong>请求失败:</strong><br>
+                    - 使用IP: ${userIP}<br>
+                    - 错误信息: ${error.message}<br>
+                    <span style="color: red;">请求失败，可能是CORS限制</span>
+                `;
+            });
+        }
+
+        // 页面加载时显示IP信息
+        showIPInfo();
+    </script>
+</body>
+</html>
