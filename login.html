@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问卷天空</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 360px;
+        }
+        h2 {
+            color: #007BFF;
+            margin-bottom: 30px;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-account {
+            background: #2196F3;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .agree {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .agree input[type="checkbox"] {
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .agree a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 1000;
+            display: none;
+            animation: fadeOut 2s forwards;
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>问卷天空</h2>
+       
+        <button class="btn btn-account" onclick="showToast()">
+            账号登录
+        </button>
+        <button class="btn btn-account" onclick="showToast()">
+            注册账号
+        </button>
+
+        <div class="agree">
+            <input type="checkbox" id="agree" checked>
+            <label for="agree">我同意《<a href="#">用户服务协议</a>》和《<a href="#">隐私条款</a>》</label>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">该地区暂不支持</div>
+
+    <script>
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
